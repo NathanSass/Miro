@@ -1,8 +1,12 @@
 package com.nathansass.miro;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 /*
     - Cache Bitmaps https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html
     - Load Large Bitmaps by sampling https://developer.android.com/training/displaying-bitmaps/load-bitmap.html
@@ -12,24 +16,33 @@ import android.widget.ImageView;
 
 public class MainActivity extends AppCompatActivity {
     ImageView mImageView;
+    Button btnAction;
     private static final int IO_BUFFER_SIZE = 8 * 1024;
     private static final int DISK_CACHE_INDEX = 0;
     String mImageUrl = "https://lh6.googleusercontent.com/-55osAWw3x0Q/URquUtcFr5I/AAAAAAAAAbs/rWlj1RUKrYI/s1024/A%252520Photographer.jpg";
-
+    Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        context = this;
         mImageView = (ImageView) findViewById(R.id.ivImage);
+        btnAction = (Button) findViewById(R.id.btnAction);
 
-        ImageLoader imageLoaderSD = new ImageLoader(this, mImageUrl, mImageView);
-        imageLoaderSD.execute();
+        Miro.loadImage(this, mImageUrl, mImageView);
 
-        ImageLoader imageLoaderMem = new ImageLoader(this, mImageUrl, mImageView);
-        imageLoaderMem.execute();
+        btnAction.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(context, "Click", Toast.LENGTH_SHORT).show();
+                Miro.loadImage(context, mImageUrl, mImageView);
+            }
+        });
     }
+
+
 
 
 //    public void loadBitmap(int resId, ImageView imageView) {

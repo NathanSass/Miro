@@ -30,12 +30,11 @@ public class ImageLoader extends AsyncTask<Void, Void, Bitmap> {
     Context context;
     MemoryCache memoryCache;
 
-    public ImageLoader(Context context, String url, ImageView imageView) {
-        this.context = context;
+    public ImageLoader(FileCache fileCache, MemoryCache memoryCache, String url, ImageView imageView) {
         this.urlString = url;
         this.imageView = imageView;
-        fileCache = new FileCache(context);
-        memoryCache = new MemoryCache();
+        this.fileCache = fileCache;
+        this.memoryCache = memoryCache;
     }
 
     @Override
