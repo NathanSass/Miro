@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.ImageView;
 
 import java.io.File;
@@ -26,19 +27,36 @@ public class ImageLoader extends AsyncTask<Void, Void, Bitmap> {
     String urlString;
     ImageView imageView;
     FileCache fileCache;
+    Context context;
+    MemoryCache memoryCache;
 
     public ImageLoader(Context context, String url, ImageView imageView) {
+        this.context = context;
         this.urlString = url;
         this.imageView = imageView;
         fileCache = new FileCache(context);
+        memoryCache = new MemoryCache();
     }
 
     @Override
     protected Bitmap doInBackground(Void... params) {
-//        String urlString = params[0];
 
-        Bitmap bitmap = null;
+        // From memory:
+        Bitmap bitmap = memoryCache.getBitmapFromMemCache(urlString);
+        if (bitmap !=null) {
+            Log.v("DEBUG", "From Memory");
+            return bitmap;
+        }
+
+        // From SD cache:
         File f = fileCache.getFile(urlString);
+        Bitmap b = decodeFile(f);
+        if(b!=null) {
+            Log.v("DEBUG", "From SD cache");
+            return b;
+        }
+
+        // From Web
 
         try {
             URL imageUrl = new URL(urlString);
@@ -51,6 +69,7 @@ public class ImageLoader extends AsyncTask<Void, Void, Bitmap> {
             Utils.CopyStream(is, os);
             os.close();
             bitmap = decodeFile(f);
+            Log.v("DEBUG", "From Web");
             return bitmap;
         } catch (Throwable ex){
             ex.printStackTrace();
@@ -61,10 +80,12 @@ public class ImageLoader extends AsyncTask<Void, Void, Bitmap> {
 
     @Override
     protected void onPostExecute(Bitmap bitmap) {
+        memoryCache.addBitmapToMemoryCache(urlString, bitmap);
         imageView.setImageBitmap(bitmap);
     }
 
     public Bitmap decodeFile(File f) {
+
         try {
             //decode image size
             BitmapFactory.Options options = new BitmapFactory.Options();

@@ -1,86 +1,42 @@
 package com.nathansass.miro;
 
 import android.graphics.Bitmap;
-import android.util.Log;
-
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import android.support.v4.util.LruCache;
 
 /**
  * Created by nathansass on 10/10/16.
  */
 
 public class MemoryCache {
-
-    private static final String TAG = "MemoryCache";
-    private Map<String, Bitmap> cache= Collections.synchronizedMap(
-            new LinkedHashMap<String, Bitmap>(10,1.5f,true));//Last argument true for LRU ordering
-    private long size=0;//current allocated size
-    private long limit=1000000;//max memory in bytes
+    private LruCache<String, Bitmap> mMemoryCache;
 
     public MemoryCache(){
-        //use 25% of available heap size
-        setLimit(Runtime.getRuntime().maxMemory()/4);
+        // Get max available VM memory, exceeding this amount will throw an
+        // OutOfMemory exception. Stored in kilobytes as LruCache takes an
+        // int in its constructor.
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+
+        // Use 1/8th of the available memory for this memory cache.
+        final int cacheSize = maxMemory / 8;
+
+        mMemoryCache = new LruCache<String, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, Bitmap bitmap) {
+                // The cache size will be measured in kilobytes rather than
+                // number of items.
+                return bitmap.getByteCount() / 1024;
+            }
+        };
     }
 
-    public void setLimit(long new_limit){
-        limit=new_limit;
-        Log.i(TAG, "MemoryCache will use up to "+limit/1024./1024.+"MB");
-    }
-
-    public Bitmap get(String id){
-        try{
-            if(!cache.containsKey(id))
-                return null;
-            //NullPointerException sometimes happen here http://code.google.com/p/osmdroid/issues/detail?id=78
-            return cache.get(id);
-        }catch(NullPointerException ex){
-            ex.printStackTrace();
-            return null;
+    public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
+        if (getBitmapFromMemCache(key) == null) {
+            mMemoryCache.put(key, bitmap);
         }
     }
 
-    public void put(String id, Bitmap bitmap){
-        try{
-            if(cache.containsKey(id))
-                size-=getSizeInBytes(cache.get(id));
-            cache.put(id, bitmap);
-            size+=getSizeInBytes(bitmap);
-//            checkSize();
-        }catch(Throwable th){
-            th.printStackTrace();
-        }
+    public Bitmap getBitmapFromMemCache(String key) {
+        return mMemoryCache.get(key);
     }
 
-//    private void checkSize() {
-//        Log.i(TAG, "cache size="+size+" length="+cache.size());
-//        if(size>limit){
-//            Iterator<Entry<String, Bitmap>> iter=cache.entrySet().iterator();//least recently accessed item will be the first one iterated
-//            while(iter.hasNext()){
-//                Entry<String, Bitmap> entry=iter.next();
-//                size-=getSizeInBytes(entry.getValue());
-//                iter.remove();
-//                if(size<=limit)
-//                    break;
-//            }
-//            Log.i(TAG, "Clean cache. New size "+cache.size());
-//        }
-//    }
-
-    public void clear() {
-        try{
-            //NullPointerException sometimes happen here http://code.google.com/p/osmdroid/issues/detail?id=78
-            cache.clear();
-            size=0;
-        }catch(NullPointerException ex){
-            ex.printStackTrace();
-        }
-    }
-
-    long getSizeInBytes(Bitmap bitmap) {
-        if(bitmap==null)
-            return 0;
-        return bitmap.getRowBytes() * bitmap.getHeight();
-    }
 }
