@@ -3,10 +3,6 @@ package com.nathansass.miro;
 import android.content.Context;
 import android.widget.ImageView;
 
-/**
- * Created by nathansass on 10/10/16.
- */
-
 public class Miro {
     private static Miro instance = null;
 

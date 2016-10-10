@@ -11,6 +11,7 @@ import android.widget.ImageView;
     - Load Large Bitmaps by sampling https://developer.android.com/training/displaying-bitmaps/load-bitmap.html
     - Get Bitmaps off the UI Thread https://developer.android.com/training/displaying-bitmaps/process-bitmap.html
     - LruCache: https://developer.android.com/reference/android/util/LruCache.html
+    - Decent approach: http://www.technotalkative.com/android-load-images-from-web-and-caching/
  */
 
 public class MainActivity extends AppCompatActivity {
