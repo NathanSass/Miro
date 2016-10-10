@@ -14,11 +14,14 @@ import java.lang.ref.WeakReference;
     - Cache Bitmaps https://developer.android.com/training/displaying-bitmaps/cache-bitmap.html
     - Load Large Bitmaps by sampling https://developer.android.com/training/displaying-bitmaps/load-bitmap.html
     - Get Bitmaps off the UI Thread https://developer.android.com/training/displaying-bitmaps/process-bitmap.html
+    - LruCache: https://developer.android.com/reference/android/util/LruCache.html
  */
 
 public class MainActivity extends AppCompatActivity {
-
     ImageView mImageView;
+    private static final int IO_BUFFER_SIZE = 8 * 1024;
+    private static final int DISK_CACHE_INDEX = 0;
+    String mImageUrl = "https://lh6.googleusercontent.com/-55osAWw3x0Q/URquUtcFr5I/AAAAAAAAAbs/rWlj1RUKrYI/s1024/A%252520Photographer.jpg";
 
     private LruCache<String, Bitmap> mMemoryCache;
 
@@ -45,6 +48,12 @@ public class MainActivity extends AppCompatActivity {
                 return bitmap.getByteCount() / 1024;
             }
         };
+        ImageLoader imageLoader = new ImageLoader(this, mImageUrl, mImageView);
+        imageLoader.execute();
+//        Bitmap downloadedBmp = null;
+//        mImageView.setImageBitmap(downloadedBmp);
+
+
     }
 
     public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
@@ -79,13 +88,15 @@ public class MainActivity extends AppCompatActivity {
             imageViewReference = new WeakReference<ImageView>(imageView);
         }
 
-
-
         // Decode image in background.
         @Override
         protected Bitmap doInBackground(Integer... params) {
-            data = params[0];
-            return decodeSampledBitmapFromResource(getResources(), data, 100, 100);
+            final Bitmap bitmap = decodeSampledBitmapFromResource(
+                    getResources(), params[0], 100, 100);
+
+            addBitmapToMemoryCache(String.valueOf(params[0]), bitmap);
+
+            return bitmap;
         }
 
         // Once complete, see if ImageView is still around and set bitmap.
