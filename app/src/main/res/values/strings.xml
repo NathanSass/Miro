@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Miro</string>
+    <string name="clear_memory_cache">Clear Memory Cache</string>
+    <string name="load_images">I load Images</string>
+    <string name="clear_file_cache">Clear File Cache</string>
 </resources>

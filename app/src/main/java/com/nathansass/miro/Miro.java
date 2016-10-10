@@ -31,6 +31,16 @@ public class Miro {
         new ImageLoader(miro.getFileCache(), miro.getMemoryCache(), url, imageView).execute();
     }
 
+    public static void clearMemoryCache(Context context) {
+        Miro miro = Miro.get(context);
+        miro.getMemoryCache().clear();
+    }
+
+    public static void clearFileCache(Context context) {
+        Miro miro = Miro.get(context);
+        miro.getFileCache().clear();
+    }
+
     private MemoryCache getMemoryCache() {
         return memoryCache;
     }
@@ -39,7 +49,4 @@ public class Miro {
         return fileCache;
     }
 
-    private Context getContext() {
-        return context;
-    }
 }

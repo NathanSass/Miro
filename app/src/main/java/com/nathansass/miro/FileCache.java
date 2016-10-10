@@ -4,9 +4,6 @@ import android.content.Context;
 
 import java.io.File;
 
-/**
- * Created by nathansass on 10/10/16.
- */
 
 public class FileCache {
 
